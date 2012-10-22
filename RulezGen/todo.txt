@@ -1,0 +1,186 @@
+Pre-Alpha To Do List
+--------------------
+
+Plan Of Attack
+--------------
+To anyone desiring to assist with the programs:  Please note that my general
+plan of attack has been to get the Rulebook Generator (somewhat) working first,
+under the assumption that the user is doing everything correctly.  My intent
+behind that is to be able to share my vision with you and those who would be
+interested in using the program.  Once the Character Generator is up and
+running, my intention is to go back to the Rulebook Generator, clean up the
+GUI, add in failsafes so users won't crash the program by doing something
+unexpected, and then go back and do the same with the Character Generator.
+Once those are complete, then the plan is to move on to the RPGServer &
+RPGClient.  Obviously, if others are willing to help with this project, those
+intents can be remolded and reshaped to fit what others are willing to work on
+(and this Section can be updated to reflect the change in approach).
+
+Once this is posted to github, I will work on adding all of these to-dos as
+issues, so that they can be tracked that way.  That being said, the below
+list may or may not be updated as we go along.  The intent is that as the
+work continues to get completed, this txt file will eventually be deleted
+all together.  Any questions, reach out to me at jazzyeagle79@gmail.com.
+
+General
+-------
+1) Recreate Project so that all apps in the suite build under one .pro file.
+
+2) After uploaded, post the various items in this todo.txt file into the
+various issues in the issue tracker on github.
+
+3) Ping zth when RulezGen gets posted to github so he can let his friend
+know about it.
+
+
+RulezGen
+---------
+.5) RPGRulebook::Instance() (Static pointer to a Rulebook instance, so I'm not
+constantly passing around the Rulebook pointer).  UPDATED:  Added and being used
+from this point on, but work still needs to happen to clean up previous code.
+
+1) Actions (A matrix of possible actions, such as move, attack, etc. for each
+game and the rules/formulas to determine how to resolve the actions, depending
+on the equipped item(s) on each of the PCs/NPCs involved in the action).
+To implement first:  Character creation, Character finalization, Level up.
+
+2) New/Open/Save functions **IN PROGRESS: Open/Save finished.  New needs to be
+created.  I elected to put it up without the new function as there's several
+things I want it to be able to do that I still need to code, and I want to
+finally release this to the world.
+
+3) Ensure all constructors initialize all class variables.
+
+4) Fix the property & table dialogs so that the components are delegates within
+views.  This should make tabbing better.  Determine the model layout as well.
+
+5) Add additional checks to ensure users are not setting up variables/items
+before the properties/item types are set.  May need to consider for Tab Page
+GUI setup as well.
+
+6) Need to think of a way to add conditionals to the character sheet:
+Vampire/WereWolf/Mage use dots, and they need to be filled dependent
+upon the number of ranks assigned.
+
+7) Certain games have currency symbols that cannot currently be represented
+with the currently available symbols (ASCII or Unicode).  Example: Nuyen from
+Shadowrun.  The user should have a way of creating the symbol used for that
+game.
+
+8) Create align functions for Tab Page components, so that users can align
+left, top, right, bottom of selected components.  Maybe change height/width
+menu options (like Excel)?  They also need to have the ability to resize (click
+and drag) and delete components. Also should consider cut/copy/pasting of
+components on the same and other pages.
+
+9) Need a way to identify pre-requesites (eg. You can't have Great Cleave feat
+without having Cleave feat first) for CharGen to use.  This will need to be
+set up in a way to allow for multiple pre-reqs.
+
+10) Need to figure out a way to identify multiple possible costs.  (Example:
+In Shadowrun, the base rules has a certain allocation of points for attributes
+specifically.  Afterwards, additional attribute points are bought using karma
+points.  Both need to work at the right time).
+
+11) Need to be able to set up tab order for usage in CharGen, so that the user
+follows the correct workflow.  Any items that are not editable by the User
+should not be part of the tab order (value of -1?).  It should be skipped.
+
+12) We should probably have a modifier type DataType (similar to item type), so
+as to separate different types of modifiers.
+
+13) Need to figure out how to handle Races and Classes:  Can these be types of
+modifiers, or do I need to create brand new DataTypes for these?  I'm hoping
+these can be modifier types, as not every game has multiple races or classes,
+so it'd be silly to force the user to create a base race and/or a base class
+simply to not use it.  (Races I'm pretty sure can be a modifier type, but I'm
+not sure if Classes would work well that way or not).
+
+14) Originally, I was going to hard code some formulas (such as Attribute
+totals), but then I realized I am providing the option  of adding additional
+properties to Attributes, Skills, etc, that could ultimately affect how a
+formula would be calculated.  Therefore, I need a way for the user to enter
+in the formulas themselves.  I may still default the formulas based on
+general guidelines so that the user can cut down on time entering formulas.
+
+15) Allow user to move tabs on RGTabPage to whatever order they want (Drag
+& Drop).  This will require a function to help relocate all of the images
+and functions based on what was shifted to where.
+
+16) Figure out a way to perform copy & paste & drag & drop moving in the
+properties and tables dialogs for entire rows (columns should stay hard
+coded, at least to begin with, because that would introduce a whole new
+level of complexity).
+
+17) I wonder if there might be a logical way to allow creation of new
+properties directly in the table dialog that would make sense to the user.
+Thought process:  If I have it add a column and they change the header,
+the header would automatically become the property.  The only issue I see
+with this is that I want to get this where some properties are not modified
+in the tables dialog, so we would have to ensure that those aren't lost.
+
+18) Work on the Edit checkboxes in properties.  The one is currently disabled,
+but there needs to be two:  One to allow editing by the CharGen user, one to
+allow editing in the variable tables within RulezGen.  Then, RulezGen variable
+tables will need to be updated to skip any properties during entry that aren't
+checked to be edited in the variable tables.
+
+
+CharGen
+-------
+Not yet started.  Need to start.
+
+CharGen basics:  CharGen will allow the user to select the game, which will
+then populate all of the rulebooks associated with that game that is in their
+rulebook folder.  They can select one Core rulebook and as  many non-core
+rulebooks as they would like.
+
+From the Core rulebook, CharGen will extract the character sheet (images and
+layout) and lay them out as indicated.  All variables will default to minimum
+values and check to ensure the member does not exceed maximum values.
+
+Have you ever played with someone who would do whatever it takes to win?
+Even cheat?  I have.  So when the character is being saved, the character file 
+will include a list of all Rulebooks used to create the character, as well as the 
+checksum (MD5 vs.SHA1/256 not yet decided).  The checksum will be used 
+by the RPGClient/Server to ensure everyone is using the same rulebooks and 
+advise the GM if they are not.  The GM will have the option to decide
+whether or not that's ok.
+
+1) Character Creation Points:  When the user finishes creating their character,
+systems with Character Creation/Build Points need for these values to drop to
+zero.  There needs to be some sort of functionality to finalize a character
+so that CharGen removes those points.  So as not to penalize those who
+Save often or those who want to come back to finish up later, Save and/or
+Exit should not be triggers for this.  Maybe a ToolBar/Menu item?  Similar
+function required for leveling up (for those games that use levels)
+
+
+
+RPGClient
+---------
+Not yet started.  Need to start.
+
+The client will be used by everyone (including the GMs) to play the game.
+Initial play will be similar to an IRC client w/ basic map capabilities
+and VOIP built in (I'm working on an Audio/Midi library for a separate
+program I'm working on with a team, so my intent is to use that library
+for audio, although I haven't decided how VOIP will work yet).  A possible
+future state would be to have an additional type of RPGClient that would
+be a 3D MMORPG environment, customizable for each game (clothes, races,
+buildings, etc).  IF that happens, that is a LONG way down the road!
+
+1) Do we want to have a built-in CharGen interface so that players can
+upgrade/level up their characters during the game?  I'm thinking yes,
+but I'm not entirely sure how this would work.
+
+
+
+RPGServer
+---------
+Not yet started.  Need to start.
+
+The server will be a back-end only to facilitate the gameplay amongst the
+clients in each particular game.  Each server, like IRC, can have multiple
+rooms, each room being its own game.
+`
