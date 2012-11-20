@@ -17,19 +17,18 @@ RGMainWindow::RGMainWindow(QWidget *parent) : QMainWindow(parent) {
         file->addAction(tr("E&xit RulezGen"), this, SLOT(onFileExit()), QKeySequence::Quit);
     bar->addMenu(file);
     QMenu *properties = new QMenu(tr("P&roperties"), this);
-        properties->addAction(tr("&Game"), this, SLOT(onPropertiesGame()));
-        properties->addAction(tr("&Rulebook"), this, SLOT(onPropertiesRulebook()));
+        properties->addAction(tr("&Game/Rulebook"), this, SLOT(onPropertiesGame()));
         properties->addAction(tr("&Character"), this, SLOT(onPropertiesCharacter()));
         properties->addAction(tr("C&urrencies"), this, SLOT(onPropertiesCurrencies()));
         properties->addAction(tr("&Attributes"), this, SLOT(onPropertiesAttributes()));
         properties->addAction(tr("&Skills"), this, SLOT(onPropertiesSkills()));
+        properties->addAction(tr("Modifier T&ypes"), this, SLOT(onPropertiesModifierTypes()));
         properties->addAction(tr("&Modifiers"), this, SLOT(onPropertiesModifiers()));
         properties->addAction(tr("Item &Types"), this, SLOT(onPropertiesItemTypes()));
         properties->addAction(tr("&Items"), this, SLOT(onPropertiesItems()));
     bar->addMenu(properties);
     QMenu *tables = new QMenu(tr("&Tables"), this);
-        tables->addAction(tr("&Game"), this, SLOT(onTablesGame()));
-        tables->addAction(tr("&Rulebook"), this, SLOT(onTablesRulebook()));
+        // Game/Rulebook info entered under properties.  No need for table here.
         // Character info entered only by user in CharGen.  No need for table here.
         tables->addAction(tr("C&urrencies"), this, SLOT(onTablesCurrencies()));
         tables->addAction(tr("&Attributes"), this, SLOT(onTablesAttributes()));
@@ -66,16 +65,34 @@ RGMainWindow::~RGMainWindow() {
 
 
 // Event Handlers //
-void RGMainWindow::onFileNew() { QMessageBox qmb; qmb.setText("This feature is not yet written."); qmb.exec(); }
+void RGMainWindow::onFileNew() {
+    RGNewDialog *dlg = new RGNewDialog(this);
+    dlg->exec();
+
+    if(dlg->result()==QDialog::Accepted) {
+        if(rulebook != NULL) {
+            delete rulebook;
+            pages->clear();
+        }
+        rulebook = new RPGRulebook(dlg->rulebookHeader());
+        setWindowIcon(dlg->getIcon());
+    }
+}
+
 
 void RGMainWindow::onFileOpen() {
     QString openname = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("Rulebook Files (*.rbk)"));
     if(openname!="")
-        rulebook = new RPGRulebook(openname);
+        if(rulebook != NULL) {
+            delete rulebook;
+            pages->clear();
+        }
+        rulebook = new RPGRulebook();
         connect(rulebook, SIGNAL(loadImage(QImage)), this, SLOT(loadImage(QImage)));
         connect(rulebook, SIGNAL(loadComponent(int, QString, QString, QString, quint16, quint16, quint16, quint16)),
-                    this,   SLOT(loadComponent(int, QString, QString, QString, quint16, quint16, quint16, quint16)));
+                    this,  SLOT(loadComponent(int, QString, QString, QString, quint16, quint16, quint16, quint16)));
         rulebook->OpenRulebook(openname);
+        setWindowIcon(rulebook->getIcon());
 }
 
 void RGMainWindow::onFileClose() { }
@@ -124,15 +141,13 @@ void RGMainWindow::onPagesRemovePage() {
 }
 
 void RGMainWindow::onPropertiesGame() {
-    RGPropertiesDialog *dialog = new RGPropertiesDialog(this, rulebook, GAM);
-    connect(dialog, SIGNAL(updateProperties(DataType,QList<RPGProperty*>)), rulebook, SLOT(updateProperties(DataType,QList<RPGProperty*>)));
-    dialog->exec();
-}
+    RGNewDialog *dlg = new RGNewDialog(this, RPGRulebook::Instance()->getHeader());
+    dlg->exec();
 
-void RGMainWindow::onPropertiesRulebook() {
-    RGPropertiesDialog *dialog = new RGPropertiesDialog(this, rulebook, RBK);
-    connect(dialog, SIGNAL(updateProperties(DataType,QList<RPGProperty*>)), rulebook, SLOT(updateProperties(DataType,QList<RPGProperty*>)));
-    dialog->exec();
+    if(dlg->result()==QDialog::Accepted) {
+        rulebook->setHeader(dlg->rulebookHeader());
+        setWindowIcon(dlg->getIcon());
+    }
 }
 
 void RGMainWindow::onPropertiesCurrencies() {
@@ -159,9 +174,15 @@ void RGMainWindow::onPropertiesSkills() {
     dialog->exec();
 }
 
+void RGMainWindow::onPropertiesModifierTypes() {
+    RGPropertiesDialog *dialog = new RGPropertiesDialog(this, rulebook, MDT);
+    connect(dialog, SIGNAL(updateProperties(DataType,QList<RPGProperty*>)), rulebook, SLOT(updateProperties(DataType,QList<RPGProperty*>)));
+    dialog->exec();
+}
+
 void RGMainWindow::onPropertiesModifiers() {
     RGPropertiesDialog *dialog = new RGPropertiesDialog(this, rulebook, MOD);
-    connect(dialog, SIGNAL(updateProperties(DataType,QList<RPGProperty*>)), rulebook, SLOT(updateProperties(DataType,QList<RPGProperty*>)));
+    connect(dialog, SIGNAL(updateProperties(DataType,QString,QList<RPGProperty*>)), rulebook, SLOT(updateProperties(DataType,QString,QList<RPGProperty*>)));
     dialog->exec();
 }
 
@@ -173,23 +194,11 @@ void RGMainWindow::onPropertiesItemTypes() {
 
 void RGMainWindow::onPropertiesItems() {
     RGPropertiesDialog *dialog = new RGPropertiesDialog(this, rulebook, ITM);
-    connect(dialog, SIGNAL(updateProperties(QString,QList<RPGProperty*>)), rulebook, SLOT(updateProperties(QString,QList<RPGProperty*>)));
+    connect(dialog, SIGNAL(updateProperties(DataType,QString,QList<RPGProperty*>)), rulebook, SLOT(updateProperties(DataType,QString,QList<RPGProperty*>)));
     dialog->exec();
 }
 
 // void RGMainWindow::onPropertiesActions() { } // To be implemented later
-
-void RGMainWindow::onTablesGame() {
-    RGTableDialog *dialog = new RGTableDialog(this, rulebook, GAM);
-    connect(dialog, SIGNAL(updateVariables(DataType, QList<RPGVariable*>)), rulebook, SLOT(updateVariables(DataType,QList<RPGVariable*>)));
-    dialog->exec();
-}
-
-void RGMainWindow::onTablesRulebook() {
-    RGTableDialog *dialog = new RGTableDialog(this, rulebook, RBK);
-    connect(dialog, SIGNAL(updateVariables(DataType, QList<RPGVariable*>)), rulebook, SLOT(updateVariables(DataType,QList<RPGVariable*>)));
-    dialog->exec();
-}
 
 void RGMainWindow::onTablesCurrencies() {
     RGTableDialog *dialog = new RGTableDialog(this, rulebook, CUR);
@@ -210,13 +219,13 @@ void RGMainWindow::onTablesSkills() {
 
 void RGMainWindow::onTablesModifiers() {
     RGTableDialog *dialog = new RGTableDialog(this, rulebook, MOD);
-    connect(dialog, SIGNAL(updateVariables(DataType, QList<RPGVariable*>)), rulebook, SLOT(updateVariables(DataType,QList<RPGVariable*>)));
+    connect(dialog, SIGNAL(updateVariables(DataType, QString, QList<RPGVariable*>)), rulebook, SLOT(updateVariables(DataType,QString,QList<RPGVariable*>)));
     dialog->exec();
 }
 
 void RGMainWindow::onTablesItems() {
     RGTableDialog *dialog = new RGTableDialog(this, rulebook, ITM);
-    connect(dialog, SIGNAL(updateVariables(QString, QList<RPGVariable*>)), rulebook, SLOT(updateVariables(QString,QList<RPGVariable*>)));
+    connect(dialog, SIGNAL(updateVariables(DataType, QString, QList<RPGVariable*>)), rulebook, SLOT(updateVariables(DataType, QString,QList<RPGVariable*>)));
     dialog->exec();
 }
 

@@ -2,7 +2,7 @@
 #define RGTABLEDIALOG_H
 
 #include <QtGui>
-#include "rpg.h"
+#include "rpgrulebook.h"
 #include "rgdicecomponent.h"
 #include "rgcombocomponent.h"
 #include "rgcurrencycomponent.h"
@@ -15,7 +15,7 @@ public:
 
 signals:
     void updateVariables(DataType, QList<RPGVariable*>);
-    void updateVariables(QString, QList<RPGVariable*>);
+    void updateVariables(DataType, QString, QList<RPGVariable*>);
 
 public slots:
     void onAccept();

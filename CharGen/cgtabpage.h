@@ -1,20 +1,19 @@
-#ifndef RGTABPAGE_H
-#define RGTABPAGE_H
+#ifndef CGTABPAGE_H
+#define CGTABPAGE_H
 
 #include <QtGui>
-#include <QRubberBand>
 #include <QList>
 #include "rpgrulebook.h"
-#include "rgtextbox.h"
-#include "rgcheckbox.h"
+//#include "rgtextbox.h"
+//#include "rgcheckbox.h"
 
 
-class RGTabPage : public QScrollArea
+class CGTabPage : public QScrollArea
 {
     Q_OBJECT
 public:
-    explicit RGTabPage(QWidget *parent, quint8 p);
-            ~RGTabPage();
+    explicit CGTabPage(QWidget *parent, quint8 p);
+            ~CGTabPage();
     void     setImage(QString filename);
     void     setImage(QImage image);
     quint8   page();
@@ -30,12 +29,8 @@ private:
     quint8                pagenumber;
     QPoint                origin;
     QPoint                destination;
-    QRubberBand          *rubberband;
-    void                  mousePressEvent(QMouseEvent *e);
-    void                  mouseMoveEvent(QMouseEvent *e);
-    void                  mouseReleaseEvent(QMouseEvent *e);
     ComponentType         ctype;
     QList<RPGComponent *> components;
 };
 
-#endif // RGTABPAGE_H
+#endif // CGTABPAGE_H

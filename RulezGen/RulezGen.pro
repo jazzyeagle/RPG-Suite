@@ -22,7 +22,9 @@ SOURCES +=\
     rgtabledialog.cpp \
     rgdicecomponent.cpp \
     rgcombocomponent.cpp \
-    rgcurrencycomponent.cpp
+    rgcurrencycomponent.cpp \
+    rpgrulebook.cpp \
+    rgnewdialog.cpp
 
 HEADERS  += \
     rgmainwindow.h \
@@ -35,7 +37,9 @@ HEADERS  += \
     rgtabledialog.h \
     rgdicecomponent.h \
     rgcurrencycomponent.h \
-    rgcombocomponent.h
+    rgcombocomponent.h \
+    rpgrulebook.h \
+    rgnewdialog.h
 
 FORMS +=
 
@@ -43,6 +47,5 @@ RESOURCES += \
     RulezGen.qrc
 
 OTHER_FILES += \
-    todo.txt \
     lgpl-2.1.txt \
     readme.txt

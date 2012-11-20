@@ -25,6 +25,8 @@ RGPropertiesDialog::RGPropertiesDialog(QWidget *parent, RPGRulebook *rbk, DataTy
         case SKI:
             setWindowTitle(tr("Skill Properties"));
             break;
+        case MDT:
+            setWindowTitle(tr("Modifier Type Properties"));
         case MOD:
             setWindowTitle(tr("Modifier Properties"));
             break;
@@ -39,8 +41,11 @@ RGPropertiesDialog::RGPropertiesDialog(QWidget *parent, RPGRulebook *rbk, DataTy
     if(dtype==ITT) { // If this is an Item Type, we only want a name for the type and that's it.
         table = new QTableWidget(0, 1, this);
         table->setHorizontalHeaderItem(0, new QTableWidgetItem(tr("Item Type")));
+        table->setColumnWidth(0, 280);    
+    } else if(dtype==MDT) {
+        table = new QTableWidget(0, 1, this);
+        table->setHorizontalHeaderItem(0, new QTableWidgetItem(tr("Modifier Type")));
         table->setColumnWidth(0, 280);
-//        connect(table, SIGNAL(itemActivated(QTableWidgetItem*)), this, SLOT(onCellActivated(QTableWidgetItem*)));
     } else {        //  Everything else has a property, type, and editable option.
         table = new QTableWidget(0, 3, this);
         table->setHorizontalHeaderItem(0, new QTableWidgetItem(tr("Property")));
@@ -49,7 +54,6 @@ RGPropertiesDialog::RGPropertiesDialog(QWidget *parent, RPGRulebook *rbk, DataTy
         table->setColumnWidth(0, 150);
         table->setColumnWidth(1, 100);
         table->setColumnWidth(2, 30);
-//        connect(table, SIGNAL(itemActivated(QTableWidgetItem*)), this, SLOT(onCellActivated(QTableWidgetItem*)));
     }
 
     addButton = new QPushButton("Add Property", this);
@@ -67,7 +71,7 @@ RGPropertiesDialog::RGPropertiesDialog(QWidget *parent, RPGRulebook *rbk, DataTy
             typebox->addItem(pname);
 
             //Load Properties
-            properties[pname] = rulebook->getProperties(pname);
+            properties[pname] = rulebook->getProperties(ITM, pname);
         }
 
         grid->addWidget(typebox,   0, 0, 1, 5);
@@ -79,7 +83,28 @@ RGPropertiesDialog::RGPropertiesDialog(QWidget *parent, RPGRulebook *rbk, DataTy
             addLine(properties[typebox->currentText()].at(i));
 
         connect(typebox, SIGNAL(currentIndexChanged(QString)), this, SLOT(onComboChange(QString)));
+    } else if(dtype==MOD) {
+        typebox = new QComboBox(this);
+        current = 0;
 
+        properties["MDT"] = rulebook->getProperties(MDT);
+        for(int i=0; i<properties["MDT"].count(); i++) {
+            QString pname = properties["MDT"].at(i)->getName();
+            typebox->addItem(pname);
+
+            //Load Properties
+            properties[pname] = rulebook->getProperties(MOD, pname);
+        }
+
+        grid->addWidget(typebox,   0, 0, 1, 5);
+        grid->addWidget(table,     1, 0, 4, 5);
+        grid->addWidget(addButton, 6, 1, 1, 1);
+        grid->addWidget(delButton, 6, 3, 1, 1);
+        grid->addWidget(buttons,   7, 0, 1, 5);
+        for(int i=0; i<properties[typebox->currentText()].count(); i++)
+            addLine(properties[typebox->currentText()].at(i));
+
+        connect(typebox, SIGNAL(currentIndexChanged(QString)), this, SLOT(onComboChange(QString)));
     } else {
         grid->addWidget(table,     0, 0, 5, 5);
         grid->addWidget(addButton, 6, 1, 1, 1);
@@ -107,8 +132,23 @@ RGPropertiesDialog::RGPropertiesDialog(QWidget *parent, RPGRulebook *rbk, DataTy
 void RGPropertiesDialog::onAccept() {
     QList<RPGProperty *> newproperties;
 
-
-    if(dtype==ITM) {
+    if(dtype==MOD) {
+        newproperties.empty();
+        newproperties = update();
+        if(newproperties.isEmpty()) { // User must go back and fix or cancel out of dialog box.
+            QMessageBox qmb;
+            qmb.setWindowTitle(tr("Error!"));
+            qmb.setText(tr("All fields must be filled out before clicking \"Ok\"."));
+            qmb.exec();
+        } else {
+            properties[typebox->currentText()] = newproperties;
+            for(int i=0; i<properties["MDT"].size(); i++) {  // Cycle through and update each Item Type
+                QString name = properties["MDT"].at(i)->getName();
+                emit updateProperties(MOD, name, properties[name]);
+                this->close();
+            }
+        }
+    } else if(dtype==ITM) {
         newproperties.empty();
         newproperties = update();
         if(newproperties.isEmpty()) { // User must go back and fix or cancel out of dialog box.
@@ -120,11 +160,10 @@ void RGPropertiesDialog::onAccept() {
             properties[typebox->currentText()] = newproperties;
             for(int i=0; i<properties["ITT"].size(); i++) {  // Cycle through and update each Item Type
                 QString name = properties["ITT"].at(i)->getName();
-                emit updateProperties(name, properties[name]);
+                emit updateProperties(ITM, name, properties[name]);
                 this->close();
             }
         }
-
     } else {
         newproperties.empty();
         newproperties = update();
@@ -158,7 +197,7 @@ QList<RPGProperty *> RGPropertiesDialog::update() {
         } else
             newproperties.at(i)->setName(le1->text());
 
-        if(dtype != ITT) {
+        if(!(dtype == ITT || dtype == MDT)) {
             QComboBox *c = (QComboBox *)table->cellWidget(i, 1);
             if(c->currentText().isEmpty())
                 ok = false; // A selection must be chosen
@@ -197,7 +236,7 @@ void RGPropertiesDialog::addLine() {
     QLineEdit *propertytext = new QLineEdit(tr("New Property"), table);
     table->setCellWidget(newrow, 0, propertytext);
 
-    if(dtype != ITT) {
+    if(!(dtype == ITT || dtype == MDT)) {
     QComboBox *typebox = new QComboBox(table);
         typebox->addItem(QString());
         typebox->addItem(tr("Text"));
@@ -210,7 +249,7 @@ void RGPropertiesDialog::addLine() {
         table->setCellWidget(newrow, 1, typebox);
 
         QCheckBox *editbox = new QCheckBox(table);
-        editbox->setEnabled(false);  // Always false for games, as chargen doesn't modify these
+        editbox->setEnabled(false);
         table->setCellWidget(newrow, 2, editbox);
     }
 }
@@ -225,7 +264,7 @@ void RGPropertiesDialog::addLine(RPGProperty *var) {
     QLineEdit *propertytext = new QLineEdit(var->getName(), table);
     table->setCellWidget(newrow, 0, propertytext);
 
-    if(dtype != ITT) {
+    if(!(dtype == ITT || dtype==MDT)) {
         QComboBox *typebox = new QComboBox(table);
         typebox->addItem(QString());
         typebox->addItem(tr("Text"));
@@ -264,7 +303,7 @@ void RGPropertiesDialog::addLine(RPGProperty *var) {
         table->setCellWidget(newrow, 1, typebox);
 
         QCheckBox *editbox = new QCheckBox(table);
-        editbox->setEnabled(false);  // Always false for games, as CharGen doesn't modify these
+        editbox->setEnabled(false);
         table->setCellWidget(newrow, 2, editbox);
     }
 }
@@ -309,29 +348,5 @@ void RGPropertiesDialog::onComboChange(QString newval) {
         for(int i=0; i<properties[newval].count(); i++)
             addLine(properties[newval].at(i));
         current = typebox->currentIndex();
-    }
-}
-
-void RGPropertiesDialog::onCellActivated() {
-    int i = 0, j = 0;
-    QMessageBox qmb;
-    qmb.setText("I'm here!!"); qmb.exec();
-    // Go through the entire table looking for the current item.
-    while(table->cellWidget(i, j) != sender() && i<table->rowCount()) {
-        j++;
-
-        // If we reached the end of the row and still haven't found the item,
-        // check the next row.
-        if(j == table->columnCount()) {
-            i++;
-            j = 0;
-        }
-    }
-
-    // Notify the user if we don't find the cell.  This should never happen.
-    if (i == table->rowCount()) {
-        qmb.setText("Cannot locate activated Widget"); qmb.exec();
-    } else {
-        table->setCurrentCell(i, j);
     }
 }

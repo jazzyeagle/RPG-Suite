@@ -30,15 +30,12 @@ enum ValueType {
 //            some will not be able to be created by hand on a form.  They are used for =
 enum DataType {
     GAM = 0,    // Game (Basic attributes to every game, name, copyright, etc.)
-                // Used in v0.1 of rulebook only.
     RBK,        // Rulebook properties (rulebook name, copyright, etc.)
-                // Used in v0.1 of rulebook only.
     CUR,        // Currency
     CHR,        // Character Info (background, eye color, skin tone, etc.)
     ATT,        // Attribute
     SKI,        // Skill
-    MDT,        // Modifier Types (e.g. Edges/Flaws, Feats, etc.)
-    MOD,        // Modifiers
+    MOD,        // Modifiers (e.g. Edges/Flaws, Feats, etc.)
     ITT,        // Item Types
     ITM        // Item
 //    ACT,        // Actions  // To be implemented later

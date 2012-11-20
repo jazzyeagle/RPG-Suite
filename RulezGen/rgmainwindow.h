@@ -5,6 +5,7 @@
 #include "rgtabpage.h"
 #include "rgpropertiesdialog.h"
 #include "rgtabledialog.h"
+#include "rgnewdialog.h"
 
 class RGMainWindow : public QMainWindow
 {
@@ -30,18 +31,19 @@ public slots:
     void onPagesRemovePage();
 
     void onPropertiesGame();
-    void onPropertiesRulebook();
+//    void onPropertiesRulebook();
     void onPropertiesCurrencies();
     void onPropertiesCharacter();
     void onPropertiesAttributes();
     void onPropertiesSkills();
+    void onPropertiesModifierTypes();
     void onPropertiesModifiers();
     void onPropertiesItemTypes();
     void onPropertiesItems();
     // void onPropertiesActions(); // To be implemented later
 
-    void onTablesGame();
-    void onTablesRulebook();
+//    void onTablesGame();
+//    void onTablesRulebook();
     void onTablesCurrencies();
     //void onTablesCharacter();
     void onTablesAttributes();

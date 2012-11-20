@@ -5,7 +5,7 @@
 #include <QLineEdit>
 #include <QComboBox>
 #include <QGridLayout>
-#include "rpg.h"
+#include "rpgrulebook.h"
 
 class RGCurrencyBox : public QWidget {
     Q_OBJECT

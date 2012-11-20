@@ -79,33 +79,36 @@ void     RGTextBox::mousePressEvent(QMouseEvent *e) {
             skills->addMenu(varMenu);
         }
         context->addMenu(skills);
+        context->addSeparator();
 
         // Load Modifiers
-        QMenu *modifiers = new QMenu(tr("Modifiers"), context);
-        variables = RPGRulebook::Instance()->getVariables(MOD);
-        properties = RPGRulebook::Instance()->getProperties(MOD);
-        for(i=0; i < variables.count(); i++) {
-            varMenu = new QMenu(variables.at(i)->getName(), modifiers);
-            for(j=0; j < properties.count(); j++)
-                varMenu->addAction(properties.at(j)->getName());
-            modifiers->addMenu(varMenu);
+        types = RPGRulebook::Instance()->getProperties(MDT);
+        for(h = 0; h < types.count(); h++) {
+            QMenu *item = new QMenu(types.at(h)->getName(), context);
+            variables = RPGRulebook::Instance()->getVariables(MOD, types.at(h)->getName());
+            properties = RPGRulebook::Instance()->getProperties(MOD, types.at(h)->getName());
+
+            for(i=0; i < variables.count(); i++) {
+                varMenu = new QMenu(variables.at(i)->getName(), item);
+                for(j=0; j < properties.count(); j++)
+                    varMenu->addAction(properties.at(j)->getName());
+                item->addMenu(varMenu);
+            }
+            context->addMenu(item);
         }
-        context->addMenu(modifiers);
         context->addSeparator();
 
         // Load Items
         types = RPGRulebook::Instance()->getProperties(ITT);
         for(h = 0; h < types.count(); h++) {
             QMenu *item = new QMenu(types.at(h)->getName(), context);
-            variables = RPGRulebook::Instance()->getVariables(types.at(h)->getName());
-            properties = RPGRulebook::Instance()->getProperties(types.at(h)->getName());
+            variables = RPGRulebook::Instance()->getVariables(ITM, types.at(h)->getName());
+            properties = RPGRulebook::Instance()->getProperties(ITM, types.at(h)->getName());
 
             for(i=0; i < variables.count(); i++) {
                 varMenu = new QMenu(variables.at(i)->getName(), item);
-                for(j=0; j < properties.count(); j++) {
-                    //QAction *a = new QAction(properties.at(j)->getName(), varMenu);
+                for(j=0; j < properties.count(); j++)
                     varMenu->addAction(properties.at(j)->getName());
-                }
                 item->addMenu(varMenu);
             }
             context->addMenu(item);

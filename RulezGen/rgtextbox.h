@@ -4,7 +4,7 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QMouseEvent>
-#include "rpg.h"
+#include "rpgrulebook.h"
 
 class RGTextBox : public QLineEdit, public RPGComponent {
     Q_OBJECT

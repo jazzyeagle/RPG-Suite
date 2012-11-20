@@ -5,7 +5,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QMouseEvent>
-#include "rpg.h"
+#include "rpgrulebook.h"
 
 class RGCheckBox : public QCheckBox, public RPGComponent
 {

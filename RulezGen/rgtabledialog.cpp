@@ -26,11 +26,10 @@ RGTableDialog::RGTableDialog(QWidget *parent, RPGRulebook *rbk, DataType t) : QD
         case MOD:
             setWindowTitle(tr("Modifier Table"));
             break;
-        case ITT:
-            setWindowTitle(tr("Item Type Table"));
-            break;
         case ITM:
             setWindowTitle(tr("Item Table"));
+            break;
+        default:    // Removes warning for ITT & MDT, as they don't have tables
             break;
     }
 
@@ -53,14 +52,48 @@ RGTableDialog::RGTableDialog(QWidget *parent, RPGRulebook *rbk, DataType t) : QD
 
         for(int i=0; i<properties["ITT"].count(); i++) {
             QString name = properties["ITT"].at(i)->getName();
-            properties[name] = rbk->getProperties(name);
-            variables[name] = rbk->getVariables(name);
+            properties[name] = rbk->getProperties(ITM, name);
+            variables[name] = rbk->getVariables(ITM, name);
             typebox->addItem(name);
         }
         typebox->setCurrentIndex(0);
 
         table = new QTableWidget(0, properties[typebox->currentText()].count()+1, this);
         table->setHorizontalHeaderItem(0, new QTableWidgetItem("Item Name"));
+        table->setColumnWidth(0, 150);
+
+        for(int i=0; i < properties[typebox->currentText()].count(); i++) {
+            table->setHorizontalHeaderItem(i+1, new QTableWidgetItem(properties[typebox->currentText()].at(i)->getName()));
+            table->setColumnWidth(i+1, 150);
+        }
+
+        if(variables[typebox->currentText()].size() > 0) {
+            for(int j=0; j < variables[typebox->currentText()].size(); j++) {
+                addLine(variables[typebox->currentText()].at(j));
+            }
+        }
+
+        grid->addWidget(typebox,   0, 0, 1, 5);
+        grid->addWidget(table,     1, 0, 5, 5);
+        grid->addWidget(addButton, 6, 1, 1, 1);
+        grid->addWidget(delButton, 6, 3, 1, 1);
+        grid->addWidget(buttons,   7, 0, 1, 5);
+        connect(typebox, SIGNAL(currentIndexChanged(QString)), this, SLOT(onComboChange(QString)));
+    } else if (dtype==MOD) {
+        properties["MDT"] = rbk->getProperties(MDT);
+        typebox = new QComboBox(this);
+        current = 0;
+
+        for(int i=0; i<properties["MDT"].count(); i++) {
+            QString name = properties["MDT"].at(i)->getName();
+            properties[name] = rbk->getProperties(MOD, name);
+            variables[name] = rbk->getVariables(MOD, name);
+            typebox->addItem(name);
+        }
+        typebox->setCurrentIndex(0);
+
+        table = new QTableWidget(0, properties[typebox->currentText()].count()+1, this);
+        table->setHorizontalHeaderItem(0, new QTableWidgetItem("Modifier Name"));
         table->setColumnWidth(0, 150);
 
         for(int i=0; i < properties[typebox->currentText()].count(); i++) {
@@ -114,7 +147,7 @@ void RGTableDialog::onAccept() {
                     // dialog box to close.
     QList<RPGVariable *> newvariables;
 
-    if(dtype==ITM) {
+    if(dtype==MOD || dtype==ITM) {
         QString itype = typebox->currentText();
         newvariables = update(itype);
         if (newvariables.isEmpty())
@@ -134,9 +167,9 @@ void RGTableDialog::onAccept() {
         qmb.setText("All fields are required.  Please review all fields and complete any that are blank.");
         qmb.exec();
     } else {
-        if(dtype==ITM) {
+        if(dtype==MOD || dtype==ITM) {
             for(int i=0; i < typebox->count(); i++)
-                emit updateVariables(typebox->itemText(i), variables[typebox->itemText(i)]);
+                emit updateVariables(dtype, typebox->itemText(i), variables[typebox->itemText(i)]);
             close();
         } else {
             emit updateVariables(dtype, variables[""]);
@@ -244,7 +277,7 @@ void RGTableDialog::addLine() {
     // Load name
     table->setCellWidget(newrow, 0, new QLineEdit(this));
 
-    if(dtype==ITM)
+    if(dtype==MOD || dtype==ITM)
         propname = typebox->currentText();
     else propname = "";
 
@@ -324,7 +357,7 @@ void RGTableDialog::addLine(RPGVariable *var) {
     // Load name
     table->setCellWidget(newrow, 0, new QLineEdit(var->getName(), this));
 
-    if(dtype==ITM)
+    if(dtype==MOD || dtype==ITM)
         propname = typebox->currentText();
     else propname = "";
 

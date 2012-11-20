@@ -2,7 +2,7 @@
 #define RGPROPERTIESDIALOG_H
 
 #include <QtGui>
-#include "rpg.h"
+#include "rpgrulebook.h"
 
 class RGPropertiesDialog : public QDialog {
     Q_OBJECT
@@ -11,7 +11,7 @@ public:
     
 signals:
     void updateProperties(DataType d, QList<RPGProperty *> properties);
-    void updateProperties(QString d, QList<RPGProperty *> properties);
+    void updateProperties(DataType t, QString d, QList<RPGProperty *> properties);
 
 public slots:
     void onAccept();
@@ -21,7 +21,6 @@ public slots:
     void addLine(RPGProperty *var);
     void delLine();
     void onComboChange(QString newval);
-    void onCellActivated();
 
 private:
     QList<RPGProperty *> update();

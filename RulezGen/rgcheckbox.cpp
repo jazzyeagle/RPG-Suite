@@ -106,8 +106,8 @@ void     RGCheckBox::mousePressEvent(QMouseEvent *e) {
         types = RPGRulebook::Instance()->getProperties(ITT);
         for(h = 0; h < types.count(); h++) {
             QMenu *item = new QMenu(types.at(h)->getName(), context);
-            variables = RPGRulebook::Instance()->getVariables(types.at(h)->getName());
-            properties = RPGRulebook::Instance()->getProperties(types.at(h)->getName());
+            variables = RPGRulebook::Instance()->getVariables(ITM, types.at(h)->getName());
+            properties = RPGRulebook::Instance()->getProperties(ITM, types.at(h)->getName());
 
             for(i=0; i < variables.count(); i++) {
                 a = new QAction(variables.at(i)->getName(), item);
